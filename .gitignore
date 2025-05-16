@@ -1,0 +1,5 @@
+/sdgo
+/lib/libsd-abi.dylib
+/.idea
+.DS_Store
+characters/*
