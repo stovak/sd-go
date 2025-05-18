@@ -1,22 +1,21 @@
 package training
 
-/*
-   #cgo LDFLAGS: -L./lib -lsd-abi
-   #include <stdlib.h>
-   #include "stable_diffusion_api.h"
-*/
 import "C"
 import (
 	"fmt"
+	"image"
 	"unsafe"
 )
 
-// StableDiffusionModel is a wrapper around the C++ libsd-abi.dylib model
+/*
+#cgo LDFLAGS: -L./lib -lsd-abi
+#include <stdlib.h>
+#include "stable_diffusion_api.h"
+*/
 type StableDiffusionModel struct {
 	ctx C.sd_context_t
 }
 
-// LoadModel loads the model from a given path
 func LoadModel(modelPath string) (*StableDiffusionModel, error) {
 	cPath := C.CString(modelPath)
 	defer C.free(unsafe.Pointer(cPath))
@@ -28,7 +27,6 @@ func LoadModel(modelPath string) (*StableDiffusionModel, error) {
 	return &StableDiffusionModel{ctx: ctx}, nil
 }
 
-// Free releases the C++ model
 func (m *StableDiffusionModel) Free() {
 	if m.ctx != nil {
 		C.sd_free_model(m.ctx)
@@ -36,9 +34,8 @@ func (m *StableDiffusionModel) Free() {
 	}
 }
 
-// Encode encodes a batch of images to latents
-func (m *StableDiffusionModel) Encode(images, latentsOut []float32, cfg *TrainConfig) error {
-	if len(images) != cfg.BatchSize*cfg.ImageChannels*cfg.ImageHeight*cfg.ImageWidth {
+func (m *StableDiffusionModel) Encode(i []image.Image, latentsOut []float32, cfg *TrainConfig) error {
+	if len(i) != cfg.BatchSize*cfg.ImageChannels*cfg.ImageHeight*cfg.ImageWidth {
 		return fmt.Errorf("invalid image input shape")
 	}
 	if len(latentsOut) != cfg.BatchSize*cfg.LatentChannels*cfg.LatentHeight*cfg.LatentWidth {
@@ -47,7 +44,7 @@ func (m *StableDiffusionModel) Encode(images, latentsOut []float32, cfg *TrainCo
 
 	errCode := C.sd_encode_latents(
 		m.ctx,
-		(*C.float)(&images[0]),
+		(*C.float)(&i[0]),
 		C.size_t(cfg.BatchSize),
 		C.size_t(cfg.ImageChannels),
 		C.size_t(cfg.ImageHeight),
@@ -60,8 +57,7 @@ func (m *StableDiffusionModel) Encode(images, latentsOut []float32, cfg *TrainCo
 	return nil
 }
 
-// Forward runs the U-Net forward pass
-func (m *StableDiffusionModel) Forward(latents []float32, timestep int, conditioning []float32, output []float32, cfg *TrainConfig) error {
+func (m *StableDiffusionModel) Forward(latents []float32, timestep int, conditioning, output []float32, cfg *TrainConfig) error {
 	if len(latents) != cfg.BatchSize*cfg.LatentChannels*cfg.LatentHeight*cfg.LatentWidth {
 		return fmt.Errorf("invalid latent input shape")
 	}
@@ -87,7 +83,6 @@ func (m *StableDiffusionModel) Forward(latents []float32, timestep int, conditio
 	return nil
 }
 
-// SaveCheckpoint is a stub — if your C++ lib supports saving, call that here
 func (m *StableDiffusionModel) SaveCheckpoint(path string) {
-	// no-op for now unless `sd_save_checkpoint` exists
+	// Optional stub for future save functionality
 }

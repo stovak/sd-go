@@ -3,66 +3,62 @@ package training
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
+	"log"
 	"time"
 )
 
-// NetworkTrainer orchestrates the training loop
 type NetworkTrainer struct {
-	Model             *StableDiffusionModel
-	Dataset           Dataset
-	Config            *TrainConfig
-	CommandStepLogger *CommandStepLogger
-	Step              int
-	Epoch             int
+	Model   *StableDiffusionModel
+	Dataset Dataset
+	Config  *TrainConfig
+	Logger  Logger
+	Step    int
+	Epoch   int
 }
 
-// NewNetworkTrainer creates a new instance of the trainer
-func NewNetworkTrainer(cmd *cobra.Command, model *StableDiffusionModel, dataset Dataset, config *TrainConfig) *NetworkTrainer {
+func NewNetworkTrainer(model *StableDiffusionModel, dataset Dataset, config *TrainConfig, logger Logger) *NetworkTrainer {
 	return &NetworkTrainer{
-		Model:             model,
-		Dataset:           dataset,
-		Config:            config,
-		CommandStepLogger: &CommandStepLogger{Cmd: cmd},
+		Model:   model,
+		Dataset: dataset,
+		Config:  config,
+		Logger:  logger,
 	}
 }
 
-// Train kicks off the training loop
-func (nt *NetworkTrainer) Train() error {
+func (nt *NetworkTrainer) Train() {
 	startTime := time.Now()
 
 	for epoch := 0; epoch < nt.Config.NumEpochs; epoch++ {
 		nt.Epoch = epoch + 1
-		nt.CommandStepLogger.Cmd.Printf("Starting epoch %d/%d", nt.Epoch, nt.Config.NumEpochs)
+		log.Printf("Starting epoch %d/%d", nt.Epoch, nt.Config.NumEpochs)
 
-		for b := range nt.Dataset.Batches() {
+		for batch := range nt.Dataset.Batches() {
 			nt.Step++
 
-			// Forward Pass
-			latents := nt.Model.EncodeLatents(b.Images)
-			pred := nt.Model.Forward(latents, b.Timestep, b.Conditioning)
+			latents := make([]float32, nt.Config.BatchSize*nt.Config.LatentChannels*nt.Config.LatentHeight*nt.Config.LatentWidth)
+			err := nt.Model.Encode(batch.Images, latents, nt.Config)
+			if err != nil {
+				log.Fatalf("Encode error: %v", err)
+			}
 
-			// Backward Pass
-			grad := nt.Model.Backward(b.TargetNoise, pred)
-			nt.Model.Step(grad)
+			pred := make([]float32, len(latents))
+			err = nt.Model.Forward(latents, batch.Timestep, batch.Conditioning, pred, nt.Config)
+			if err != nil {
+				log.Fatalf("Forward error: %v", err)
+			}
 
-			// Loss Calculation
-			loss := computeMSE(pred, b.TargetNoise)
+			loss := computeMSE(pred, batch.TargetNoise)
 
 			if nt.Step%nt.Config.LogInterval == 0 {
-				nt.CommandStepLogger.LogStep(nt.Step, nt.Epoch, loss)
+				nt.Logger.LogStep(nt.Step, nt.Epoch, loss)
 			}
 
-			// Checkpointing
 			if nt.Config.SaveInterval > 0 && nt.Step%nt.Config.SaveInterval == 0 {
-				filename := fmt.Sprintf("%s/model_step_%d.ckpt", nt.Config.OutputDir, nt.Step)
-				_ = nt.Model.SaveCheckpoint(filename)
-				nt.CommandStepLogger.Cmd.Printf("Saved checkpoint: %s", filename)
+				path := fmt.Sprintf("%s/model_step_%d.ckpt", nt.Config.OutputDir, nt.Step)
+				nt.Model.SaveCheckpoint(path)
 			}
 
-			// Early exit
 			if nt.Step >= nt.Config.MaxSteps {
-				nt.CommandStepLogger.Cmd.Println("Reached max training steps.")
 				break
 			}
 		}
@@ -70,9 +66,7 @@ func (nt *NetworkTrainer) Train() error {
 			break
 		}
 	}
-
-	nt.CommandStepLogger.Cmd.Printf("Training finished in %s", time.Since(startTime))
-	return nil
+	log.Printf("Training complete in %s", time.Since(startTime))
 }
 
 func computeMSE(a, b []float32) float32 {

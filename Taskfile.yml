@@ -1,0 +1,18 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  clean:
+    cmds:
+      - rm -Rf bin/*
+  build:
+    cmds:
+      - go build -o bin
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true

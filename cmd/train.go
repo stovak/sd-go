@@ -21,13 +21,16 @@ var trainCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(trainCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	rootCmd.PersistentFlags().String("model_path", "models", "A help for foo")
-	rootCmd.PersistentFlags().String("checkpoint_filename", "v2-1_768-ema-pruned", "A help for foo")
-	// trainCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	trainCmd.PersistentFlags().String("training_data_dir", "text", "Directory where the training data sources should be stored at time of execution.")
+	trainCmd.PersistentFlags().Int("batchSize", 1, "Batch size for the training data.")
+	trainCmd.PersistentFlags().Int("imageChannels", 1, "Number of image channels.")
+	trainCmd.PersistentFlags().Int("imageHeight", 255, "Image height in pixels.")
+	trainCmd.PersistentFlags().Int("imageWidth", 255, "Image width in pixels.")
+	trainCmd.PersistentFlags().Int("latentChannels", 1, "Number of latent channels.")
+	trainCmd.PersistentFlags().Int("latentHeight", 255, "Image height in pixels.")
+	trainCmd.PersistentFlags().Int("latentWidth", 255, "Image width in pixels.")
+	trainCmd.PersistentFlags().Int("numEpochs", 1, "Number of epochs.")
+	trainCmd.PersistentFlags().Int("maxSteps", 255, "Max number of steps.")
+	trainCmd.PersistentFlags().Int("logInterval", 1, "Log interval in seconds.")
+	trainCmd.PersistentFlags().Int("saveInterval", 1, "Save Interval in seconds.")
 }
