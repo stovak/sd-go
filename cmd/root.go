@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stovak/sdgo/cmd/config"
 	"os"
+	"path"
 )
 
 var (
@@ -55,12 +56,13 @@ func init() {
 	if err != nil {
 		cobra.CheckErr(err)
 	}
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sdgo.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sdgo/sdgo.yaml)")
 	rootCmd.PersistentFlags().String("root_path", dir, "Always the CWD unless set with this flag/ENV_VAR")
 	rootCmd.PersistentFlags().String("model_path", "models", "A help for foo. always relative to ROOT_PATH")
-	rootCmd.PersistentFlags().String("checkpoint_filename", "v2-1_768-ema-pruned", "The filename of the checkpoint to be used as the model")
+	rootCmd.PersistentFlags().String("checkpoint_filename", "v1-5-pruned-emaonly", "The filename of the checkpoint to be used as the model")
 	rootCmd.PersistentFlags().String("outputs_folder", "output", "folder to write all outputs. if it doesn't exist, it will be created.")
 	rootCmd.PersistentFlags().String("log_level", "info", "Log level")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", true, "verbose logging")
 
 	rootCmd.AddCommand(trainCmd)
 	rootCmd.AddCommand(config.ShowCmd)
@@ -83,23 +85,23 @@ func initConfig(cmd *cobra.Command) error {
 		cobra.CheckErr(err)
 
 		// Search config in home directory with name ".sdgo" (without extension).
-		viper.AddConfigPath(home)
+		viper.AddConfigPath(path.Join(home, ".sdgo"))
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".sdgo")
+		viper.SetConfigName("sdgo")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err = viper.ReadInConfig(); err == nil {
-		cmd.Printf("Using config file: %s \n", viper.ConfigFileUsed())
+		log.Debugf("Using config file: %s \n", viper.ConfigFileUsed())
 		return nil
 	}
 	cmd.Println("No config file found, using defaults from config.dist.yaml")
 	// read in from the defaults config
 	f, err := os.Open("config.dist.yaml")
 	cobra.CheckErr(err)
-	cmd.Println("Using config file: config.dist.yaml")
+	log.Debug("Using config file: config.dist.yaml")
 	return viper.ReadConfig(f)
 }
 

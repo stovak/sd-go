@@ -3,20 +3,21 @@ package training
 
 import (
 	"fmt"
+	"github.com/stovak/sdgo/pkg/config"
 	"log"
 	"time"
 )
 
 type NetworkTrainer struct {
 	Model   *StableDiffusionModel
-	Dataset Dataset
-	Config  *TrainConfig
-	Logger  Logger
+	Dataset config.Dataset
+	Config  *config.TrainConfig
+	Logger  config.Logger
 	Step    int
 	Epoch   int
 }
 
-func NewNetworkTrainer(model *StableDiffusionModel, dataset Dataset, config *TrainConfig, logger Logger) *NetworkTrainer {
+func NewNetworkTrainer(model *StableDiffusionModel, dataset config.Dataset, config *config.TrainConfig, logger config.Logger) *NetworkTrainer {
 	return &NetworkTrainer{
 		Model:   model,
 		Dataset: dataset,

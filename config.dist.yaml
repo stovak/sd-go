@@ -1,4 +1,4 @@
 ---
+checkpoint_filename: v1-5-pruned-emaonly.ckpt
 characters_folder: characters
 model_path: models
-checkpoint_filename: v2-1_768-ema-pruned

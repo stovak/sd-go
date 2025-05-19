@@ -3,6 +3,7 @@ package training
 import "C"
 import (
 	"fmt"
+	"github.com/stovak/sdgo/pkg/config"
 	"image"
 	"unsafe"
 )
@@ -34,7 +35,7 @@ func (m *StableDiffusionModel) Free() {
 	}
 }
 
-func (m *StableDiffusionModel) Encode(i []image.Image, latentsOut []float32, cfg *TrainConfig) error {
+func (m *StableDiffusionModel) Encode(i []image.Image, latentsOut []float32, cfg *config.TrainConfig) error {
 	if len(i) != cfg.BatchSize*cfg.ImageChannels*cfg.ImageHeight*cfg.ImageWidth {
 		return fmt.Errorf("invalid image input shape")
 	}
@@ -57,7 +58,7 @@ func (m *StableDiffusionModel) Encode(i []image.Image, latentsOut []float32, cfg
 	return nil
 }
 
-func (m *StableDiffusionModel) Forward(latents []float32, timestep int, conditioning, output []float32, cfg *TrainConfig) error {
+func (m *StableDiffusionModel) Forward(latents []float32, timestep int, conditioning, output []float32, cfg *config.TrainConfig) error {
 	if len(latents) != cfg.BatchSize*cfg.LatentChannels*cfg.LatentHeight*cfg.LatentWidth {
 		return fmt.Errorf("invalid latent input shape")
 	}

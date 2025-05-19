@@ -1,7 +1,8 @@
-package training
+package config
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/stovak/sdgo/pkg/training"
 	"strconv"
 )
 
@@ -10,27 +11,24 @@ type TrainConfig struct {
 	// with drops of jupiter in her hair, heh-heh
 
 	// === Model Input Shapes ===
-	BatchSize     int // e.g., 1, 2, 4
-	ImageChannels int // typically 3 for RGB
-	ImageHeight   int // e.g., 512
-	ImageWidth    int // e.g., 512
-
-	LatentChannels int // typically 4 (for SD 1.5)
-	LatentHeight   int // usually ImageHeight / 8 (e.g., 64)
-	LatentWidth    int // usually ImageWidth / 8 (e.g., 64)
-
-	// === Training Parameters ===
-	NumEpochs    int // e.g., 10
-	MaxSteps     int // total training steps (overrides epochs if set)
-	LogInterval  int // log every N steps
-	SaveInterval int // save every N steps
+	BatchSize      int `yaml:"batch_size"`      // e.g., 1, 2, 4
+	ImageChannels  int `yaml:"image_channels"`  // typically 3 for RGB
+	ImageHeight    int `yaml:"image_height"`    // e.g., 512
+	ImageWidth     int `yaml:"image_width"`     // e.g., 512
+	LatentChannels int `yaml:"latent_channels"` // typically 4 (for SD 1.5)
+	LatentHeight   int `yaml:"latent_height"`   // usually ImageHeight / 8 (e.g., 64)
+	LatentWidth    int `yaml:"latent_width"`    // usually ImageWidth / 8 (e.g., 64)
+	NumEpochs      int `yaml:"num_epochs"`      // e.g., 10
+	MaxSteps       int `yaml:"max_steps"`       // total training steps (overrides epochs if set)
+	LogInterval    int `yaml:"log_interval"`    // log every N steps
+	SaveInterval   int `yaml:"save_interval"`   // save every N steps
 
 	// === File System / Paths ===
-	OutputDir string // where to write logs/models
+	OutputDir string `yaml:"output_dir"` // where to write logs/models
 
-	ModelPath string // path to .ckpt or .safetensors if used
+	ModelPath string `yaml:"model_path"` // path to .ckpt or .safetensors if used
 
-	TrainingDataDir string
+	TrainingDataDir string `yaml:"training_data_dir"`
 
 	CommandStepLogger *CommandStepLogger
 }
@@ -69,7 +67,7 @@ func NewTrainConfig(cmd *cobra.Command) *TrainConfig {
 }
 
 type Dataset interface {
-	Batches() <-chan Batch
+	Batches() <-chan training.Batch
 }
 
 type Logger interface {

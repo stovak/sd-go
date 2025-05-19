@@ -19,25 +19,26 @@ func ConfigCheck(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	cmd.Printf("Root Path: %s \n", rootPath)
+	cmd.Printf("✅ Root Path: %s \n", rootPath)
 	// 1. Check to see if the model file exists
 	modelPath, err := cmd.Flags().GetString("model_path")
 	if err != nil {
 		return err
 	}
-	cmd.Printf("Model Path: %s \n", modelPath)
 	if _, err := os.Stat(modelPath); err != nil {
 		return err
 	}
+	cmd.Printf("✅ Model Path: %s \n", modelPath)
+
 	checkpointFile, err := cmd.Flags().GetString("checkpoint_filename")
 	if err != nil {
 		return err
 	}
-	cmd.Printf("Checkpoint File: %s \n", checkpointFile)
-	if _, err := os.Stat(filepath.Join(modelPath, checkpointFile)); err != nil {
+	if _, err := os.Stat(filepath.Join(modelPath, checkpointFile+".ckpt")); err != nil {
 		return err
 	}
-	cmd.Printf("Checkpoint File: %s \n", filepath.Join(modelPath, checkpointFile))
+	cmd.Printf("✅ Checkpoint File: %s \n", checkpointFile)
+
 	outputsFolder, err := cmd.Flags().GetString("outputs_folder")
 	if err != nil {
 		if err != nil {
@@ -49,7 +50,7 @@ func ConfigCheck(cmd *cobra.Command, args []string) error {
 		cobra.CheckErr(os.MkdirAll(outputsFolder, os.ModePerm))
 	}
 	// 2. Check to see if the outputs folder exists
-	cmd.Printf("Outputs Folder: %s \n", filepath.Join(rootPath, outputsFolder))
-	// 3.
+	cmd.Printf("✅ Outputs Folder: %s \n", filepath.Join(rootPath, outputsFolder))
+	// Put other config checks here
 	return nil
 }
