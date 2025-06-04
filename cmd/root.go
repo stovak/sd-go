@@ -5,12 +5,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stovak/sdgo/cmd/config"
-	"os"
-	"path"
 )
 
 var (
@@ -59,12 +60,13 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sdgo/sdgo.yaml)")
 	rootCmd.PersistentFlags().String("root_path", dir, "Always the CWD unless set with this flag/ENV_VAR")
 	rootCmd.PersistentFlags().String("model_path", "models", "A help for foo. always relative to ROOT_PATH")
-	rootCmd.PersistentFlags().String("checkpoint_filename", "v1-5-pruned-emaonly", "The filename of the checkpoint to be used as the model")
+	rootCmd.PersistentFlags().String("checkpoint_filename", "miniSD.ckpt", "The filename of the checkpoint to be used as the model")
 	rootCmd.PersistentFlags().String("outputs_folder", "output", "folder to write all outputs. if it doesn't exist, it will be created.")
 	rootCmd.PersistentFlags().String("log_level", "info", "Log level")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", true, "verbose logging")
 
 	rootCmd.AddCommand(trainCmd)
+	rootCmd.AddCommand(generateCmd)
 	rootCmd.AddCommand(config.ShowCmd)
 	rootCmd.AddCommand(config.WriteCommand)
 }

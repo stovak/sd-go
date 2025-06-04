@@ -11,11 +11,12 @@ var trainCmd = &cobra.Command{
 	Short: "Train Stable diffusion on a folder of character images",
 	Long:  `The command will look through the config file for `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, err := instances.CreateModelInstance(cmd)
+		m, err := instances.CreateModelInstance(cmd)
 		if err != nil {
 			return err
 		}
-		cmd.Println("Model is initialized")
+		cmd.Printf("Model is initialized %+v", m)
+
 		return nil
 	},
 }

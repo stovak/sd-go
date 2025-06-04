@@ -1,6 +1,7 @@
 package config
 
 import (
+	sd "github.com/seasonjs/stable-diffusion"
 	"github.com/spf13/cobra"
 	"github.com/stovak/sdgo/pkg/training"
 	"strconv"
@@ -9,7 +10,8 @@ import (
 type TrainConfig struct {
 	// Now she's back in my atmosphere
 	// with drops of jupiter in her hair, heh-heh
-
+	// Automodel options:
+	AutomodelOptions sd.Options `yaml:"options"`
 	// === Model Input Shapes ===
 	BatchSize      int `yaml:"batch_size"`      // e.g., 1, 2, 4
 	ImageChannels  int `yaml:"image_channels"`  // typically 3 for RGB

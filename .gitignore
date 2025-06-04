@@ -6,3 +6,5 @@ characters/*
 training_data/*
 bin/*
 models/*
+.envrc
+/output

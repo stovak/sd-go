@@ -3,42 +3,40 @@ package instances
 import (
 	"errors"
 	"fmt"
-	"github.com/seasonjs/hf-hub/api"
+	"os"
+	"path"
+
 	sd "github.com/seasonjs/stable-diffusion"
 	"github.com/spf13/cobra"
 )
 
 func CreateModelInstance(cmd *cobra.Command) (*sd.Model, error) {
+	cmd.Printf("Creating model instance")
 	// Configure me...
 	mp, err := cmd.Flags().GetString("model_path")
 	if err != nil {
 		return nil, errors.New(fmt.Sprint("unable to get model_path flag, err:", err))
 	}
+	if _, exist := os.Stat(mp); exist != nil {
+		return nil, errors.New(fmt.Sprint("model path does not exist, err:", err))
+	}
+	cmd.Printf("Model Path: %s \n", mp)
 	cp, err := cmd.Flags().GetString("checkpoint_filename")
 	if err != nil {
 		return nil, errors.New(fmt.Sprint("unable to get checkpoint_filename flag, err:", err))
 	}
+	if _, err = os.Stat(path.Join(mp, cp)); err != nil {
+		return nil, errors.New(fmt.Sprintf("checkpoint file does not exist, err: %s", path.Join(mp, cp)))
+	}
 
 	options := sd.DefaultOptions
-	// TODO: merge options from config file with defaults
 	model, err := sd.NewAutoModel(options)
 	if err != nil {
-		return nil, errors.New(fmt.Sprint("unable to create auto model, err:", err))
+		return nil, err
 	}
 	defer model.Close()
+	cmd.Printf("options: %+v", options)
 
-	hapi, err := api.NewApi()
-	if err != nil {
-		return nil, errors.New(fmt.Sprint("unable to create api instance, err:", err))
-	}
-	modelPath, err := hapi.Model(mp).Get(cp)
-	if err != nil {
-		return nil, errors.New(fmt.Sprint("unable to get model path, err:", err))
-	}
-
-	err = model.LoadFromFile(modelPath)
-	if err != nil {
-		return nil, errors.New(fmt.Sprint("unable to load model file, err:", err))
-	}
-	return model, nil
+	err = model.LoadFromFile(path.Join(mp, cp))
+	return model, err
 }
